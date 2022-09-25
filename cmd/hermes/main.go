@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	db  = "DB_CONNECTION"
 	env = "ENV"
 )
 
@@ -33,14 +34,17 @@ func main() {
 		return
 	}
 
-	environment := pkg.NewEnv(commons.NewLogger(environ))
+	if err := new(pkg.Database).Set(os.Getenv(db)); err != nil {
+		panic(err)
+	}
 
-	gw, err := pkg.NewGateway(environment)
+	logger := commons.NewLogger(env)
+
+	gw, err := pkg.NewGateway()
 	if err != nil {
 		panic(err)
 	}
 
-	logger := environment.Log
 	logger.Info("starting container...")
 
 	opts := []grpc.ServerOption{
@@ -51,7 +55,6 @@ func main() {
 					grpc_recovery.WithRecoveryHandlerContext(
 						func(ctx context.Context, p interface{}) error {
 							logger.Error("grpc_recovery", p, ctx)
-
 							return p.(error)
 						},
 					),
