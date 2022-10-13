@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -27,12 +26,6 @@ func main() {
 	port := flag.Int("port", 5080, "grpc port")
 
 	flag.Parse()
-
-	environ := commons.Environment(os.Getenv(env))
-	if environ == "" {
-		log.Fatalf("environment is not provided: please provide %s variable", env)
-		return
-	}
 
 	if err := new(pkg.Database).Set(os.Getenv(db)); err != nil {
 		panic(err)
