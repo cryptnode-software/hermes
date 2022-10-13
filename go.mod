@@ -12,8 +12,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/improbable-eng/grpc-web v0.15.1-0.20220903181722-057c94852ab5
-	go.buf.build/grpc/go/thenewlebowski/hermes v1.4.1
-	google.golang.org/grpc v1.49.0
+	go.buf.build/grpc/go/thenewlebowski/hermes v1.4.2
+	google.golang.org/grpc v1.50.0
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/gorm v1.23.10
 )

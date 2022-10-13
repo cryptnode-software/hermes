@@ -6,29 +6,29 @@ import (
 	api "go.buf.build/grpc/go/thenewlebowski/hermes/v1"
 )
 
-type cmessage struct {
-	message *model.Message
+type revent struct {
+	event *model.Event
 }
 
-func (message cmessage) convert() (*api.Message, error) {
-	if message.message == nil {
+func (event revent) convert() (*api.Event, error) {
+	if event.event == nil {
 		return nil, nil
 	}
 
-	created, err := ptypes.TimestampProto(message.message.CreatedAt)
+	created, err := ptypes.TimestampProto(event.event.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	updated, err := ptypes.TimestampProto(message.message.UpdatedAt)
+	updated, err := ptypes.TimestampProto(event.event.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	return &api.Message{
-		Metadata: cmetadata{message.message.Metadata}.convert(),
-		Id:       message.message.ID.String(),
-		Text:     message.message.Text,
+	return &api.Event{
+		Metadata: cmetadata{event.event.Metadata}.convert(),
+		Id:       event.event.ID.String(),
+		Text:     event.event.Text,
 		Created:  created,
 		Updated:  updated,
 	}, nil

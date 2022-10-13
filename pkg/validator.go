@@ -6,23 +6,23 @@ import (
 	api "go.buf.build/grpc/go/thenewlebowski/hermes/v1"
 )
 
-type message struct {
-	*api.Message
+type event struct {
+	*api.Event
 }
 
-func (message message) validate() (*model.Message, error) {
-	if message.Text == "" {
+func (event event) validate() (*model.Event, error) {
+	if event.Text == "" {
 		return nil, ErrEmptyMessageText
 	}
 
-	result := new(model.Message)
+	result := new(model.Event)
 
-	if uuid, err := uuid.Parse(message.Id); err == nil {
+	if uuid, err := uuid.Parse(event.Id); err == nil {
 		result.ID = uuid
 	}
 
-	result.Metadata = metadata{message.Metadata}.convert()
-	result.Text = message.Text
+	result.Metadata = metadata{event.Metadata}.convert()
+	result.Text = event.Text
 
 	return result, nil
 }

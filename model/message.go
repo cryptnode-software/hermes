@@ -4,7 +4,7 @@ import (
 	commons "github.com/cryptnode-software/commons/pkg"
 )
 
-type Message struct {
+type Event struct {
 	Metadata *Metadata
 	commons.Model
 	Text   string

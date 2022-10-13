@@ -19,7 +19,7 @@ func NewService() (result *Service, err error) {
 	return
 }
 
-func (service *Service) Save(message *model.Message) (*model.Message, error) {
+func (service *Service) Save(message *model.Event) (*model.Event, error) {
 	if message.ID == uuid.Nil {
 		if err := service.db.Save(message).Error; err != nil {
 			return nil, err
@@ -27,13 +27,13 @@ func (service *Service) Save(message *model.Message) (*model.Message, error) {
 		return message, nil
 	}
 
-	service.db.Model(new(model.Message)).
+	service.db.Model(new(model.Event)).
 		Update("metadata", message.Metadata).
 		Update("text", message.Text).
 		Where("id = ?", message.ID)
 	return message, nil
 }
 
-func (service *Service) Delete(message *model.Message) error {
+func (service *Service) Delete(message *model.Event) error {
 	return service.db.Delete(message).Error
 }

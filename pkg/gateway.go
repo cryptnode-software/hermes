@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commons "github.com/cryptnode-software/commons/pkg"
+	"github.com/cryptnode-software/hermes/model"
 	api "go.buf.build/grpc/go/thenewlebowski/hermes/v1"
 )
 
@@ -16,41 +17,53 @@ func NewGateway() (result *Gateway, err error) {
 }
 
 type Gateway struct {
-	log            commons.Logger
-	MessageService MessageService
-	UserService    UserService
+	log         commons.Logger
+	UserService UserService
+	SocketService
+	Event Event
 }
 
-func (gateway *Gateway) SaveMessage(ctx context.Context, request *api.Message) (response *api.Message, err error) {
+func (gateway *Gateway) Subscribe(request *api.SubscribeRequest, server api.Hermes_SubscribeServer) error {
+	socket := &socket{
+		server,
+	}
+	return gateway.SocketService.Connect(request.Resource, socket)
+}
 
-	message, err := message{request}.validate()
+func (gateway *Gateway) Dispatch(ctx context.Context, request *api.DispatchRequest) (response *api.DispatchResponse, err error) {
+	event, err := event{request.Event}.validate()
 	if err != nil {
 		gateway.log.Error("save message error", "err", err)
 		return
 	}
 
-	message, err = gateway.MessageService.Save(ctx, message)
+	if request.Resource != "" {
+		gateway.SocketService.Dispatch(ctx, request.Resource, []*model.Event{event})
+	}
+
+	event, err = gateway.Event.Save(ctx, event)
 	if err != nil {
 		gateway.log.Error("save message error", "err", err)
 		return
 	}
-
-	response, err = cmessage{message}.convert()
+	response = new(api.DispatchResponse)
+	response.Event, err = revent{event}.convert()
 	if err != nil {
 		gateway.log.Error("save message error", "err", err)
+		return
 	}
 
 	return
 }
 
-func (gateway *Gateway) DeleteMessage(ctx context.Context, request *api.Message) (response *api.Message, err error) {
-	message, err := message{request}.validate()
+func (gateway *Gateway) DeleteMessage(ctx context.Context, request *api.Event) (response *api.Event, err error) {
+	message, err := event{request}.validate()
 	if err != nil {
 		gateway.log.Error("save message error", "err", err)
 		return
 	}
 
-	err = gateway.MessageService.Delete(ctx, message)
+	err = gateway.Event.Delete(ctx, message)
 	if err != nil {
 		gateway.log.Error("save message error", "err", err)
 		return

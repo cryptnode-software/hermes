@@ -43,7 +43,6 @@ func main() {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
-
 				grpc_recovery.UnaryServerInterceptor(
 					grpc_recovery.WithRecoveryHandlerContext(
 						func(ctx context.Context, p interface{}) error {
