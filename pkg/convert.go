@@ -1,13 +1,13 @@
 package pkg
 
 import (
-	"github.com/cryptnode-software/hermes/model"
+	"github.com/cryptnode-software/hermes/gorm"
 	"github.com/golang/protobuf/ptypes"
 	api "go.buf.build/grpc/go/thenewlebowski/hermes/v1"
 )
 
 type revent struct {
-	event *model.Event
+	event *gorm.Event
 }
 
 func (event revent) convert() (*api.Event, error) {
@@ -35,7 +35,7 @@ func (event revent) convert() (*api.Event, error) {
 }
 
 type cmetadata struct {
-	metadata *model.Metadata
+	metadata *gorm.Metadata
 }
 
 func (metadata cmetadata) convert() map[string]string {

@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/cryptnode-software/hermes/pkg"
+	db "github.com/cryptnode-software/hermes/gorm"
 	"gorm.io/gorm"
 )
 
@@ -11,7 +11,7 @@ type Service struct {
 
 func NewService() (result *Service, err error) {
 	result = new(Service)
-	if result.db, err = pkg.GetDatabase(); err != nil {
+	if result.db, err = db.Get(); err != nil {
 		return
 	}
 	return

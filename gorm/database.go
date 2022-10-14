@@ -1,4 +1,4 @@
-package pkg
+package gorm
 
 import (
 	"gorm.io/driver/mysql"
@@ -38,7 +38,7 @@ func (database *Database) Set(dsn string) error {
 	return nil
 }
 
-func GetDatabase() (*gorm.DB, error) {
+func Get() (*gorm.DB, error) {
 	if globaldb == nil || globaldb.connection == nil {
 		return nil, ErrNoDatabaseSet
 	}

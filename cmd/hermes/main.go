@@ -8,7 +8,11 @@ import (
 	"os"
 
 	commons "github.com/cryptnode-software/commons/pkg"
+	"github.com/cryptnode-software/hermes/gorm"
 	"github.com/cryptnode-software/hermes/pkg"
+	"github.com/cryptnode-software/hermes/services/event"
+	"github.com/cryptnode-software/hermes/services/socket"
+	"github.com/cryptnode-software/hermes/services/user"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -27,7 +31,7 @@ func main() {
 
 	flag.Parse()
 
-	if err := new(pkg.Database).Set(os.Getenv(db)); err != nil {
+	if err := new(gorm.Database).Set(os.Getenv(db)); err != nil {
 		panic(err)
 	}
 
@@ -36,6 +40,33 @@ func main() {
 	gw, err := pkg.NewGateway()
 	if err != nil {
 		panic(err)
+	}
+
+	event, err := event.NewService()
+	if err != nil {
+		panic(err)
+	}
+	err = gw.SetEvent(event)
+	if err != nil {
+		return
+	}
+
+	socket, err := socket.NewService()
+	if err != nil {
+		panic(err)
+	}
+	err = gw.SetSocket(socket)
+	if err != nil {
+		return
+	}
+
+	user, err := user.NewService()
+	if err != nil {
+		panic(err)
+	}
+	err = gw.SetUser(user)
+	if err != nil {
+		return
 	}
 
 	logger.Info("starting container...")
