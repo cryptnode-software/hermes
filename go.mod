@@ -10,7 +10,7 @@ go 1.18
 
 require (
 	github.com/cryptnode-software/commons v0.0.0-20220925045416-b3e6361f83e0
-	github.com/cryptnode-software/grpc v0.0.0-20221123203643-0c5d5c7787b8
+	github.com/cryptnode-software/grpc v0.0.0-20221123231124-391714d8a847
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
 	github.com/improbable-eng/grpc-web v0.15.0
@@ -23,6 +23,10 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.1 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/gomodule/redigo v1.8.4 // indirect
+	github.com/googollee/go-socket.io v1.6.2 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

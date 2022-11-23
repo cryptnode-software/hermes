@@ -23,6 +23,7 @@ const (
 
 func main() {
 
+	socketport := flag.String("socket-port", ":5082", "web socket port")
 	httpport := flag.String("grpc-web-port", ":5080", "grpc-web port")
 	grpcport := flag.String("grpc-port", ":5081", "grpc port")
 
@@ -70,12 +71,34 @@ func main() {
 		},
 	}
 
+	socketserver, err := micro.NewSocketServer(*socketport)
+	if err != nil {
+		panic(err)
+	}
+
+	socket, err := NewSocketServer()
+	if err != nil {
+		panic(err)
+	}
+
+	socketserver.Register(socket.Server())
+
 	server.Add(httpServer)
 	server.Add(grpcserver)
+	server.Add(socketserver)
 
 	if err = server.Run(); err != nil {
 		panic(err)
 	}
+}
+
+func NewSocketServer() (*socket.Service, error) {
+	socket, err := socket.NewService()
+	if err != nil {
+		return nil, err
+	}
+
+	return socket, nil
 }
 
 func NewGateway() (gw *pkg.Gateway, err error) {
@@ -89,15 +112,6 @@ func NewGateway() (gw *pkg.Gateway, err error) {
 		panic(err)
 	}
 	err = gw.SetEvent(event)
-	if err != nil {
-		return
-	}
-
-	socket, err := socket.NewService()
-	if err != nil {
-		panic(err)
-	}
-	err = gw.SetSocket(socket)
 	if err != nil {
 		return
 	}
