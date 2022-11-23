@@ -1,23 +1,19 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 
 	commons "github.com/cryptnode-software/commons/pkg"
+	micro "github.com/cryptnode-software/grpc"
 	"github.com/cryptnode-software/hermes/gorm"
 	"github.com/cryptnode-software/hermes/pkg"
 	"github.com/cryptnode-software/hermes/services/event"
 	"github.com/cryptnode-software/hermes/services/socket"
 	"github.com/cryptnode-software/hermes/services/user"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	api "go.buf.build/grpc/go/thenewlebowski/hermes/v1"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -27,7 +23,8 @@ const (
 
 func main() {
 
-	port := flag.Int("port", 5080, "grpc port")
+	httpport := flag.String("grpc-web-port", ":5080", "grpc-web port")
+	grpcport := flag.String("grpc-port", ":5081", "grpc port")
 
 	flag.Parse()
 
@@ -37,7 +34,52 @@ func main() {
 
 	logger := commons.NewLogger(env)
 
-	gw, err := pkg.NewGateway()
+	gw, err := NewGateway()
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Info("starting container...")
+
+	server, err := micro.NewServer()
+	if err != nil {
+		panic(err)
+	}
+
+	grpcserver, err := micro.NewGRPCServer(*grpcport)
+	if err != nil {
+		panic(err)
+	}
+
+	api.RegisterHermesServer(grpcserver.Server(), gw)
+
+	webserver := grpcweb.WrapServer(grpcserver.Server(),
+		grpcweb.WithOriginFunc(func(str string) bool {
+			return true // change this
+		}),
+	)
+
+	httpServer := &micro.HttpServer{
+		Server: &http.Server{
+			Addr: *httpport,
+			Handler: http.HandlerFunc(
+				func(resp http.ResponseWriter, req *http.Request) {
+					webserver.ServeHTTP(resp, req)
+				},
+			),
+		},
+	}
+
+	server.Add(httpServer)
+	server.Add(grpcserver)
+
+	if err = server.Run(); err != nil {
+		panic(err)
+	}
+}
+
+func NewGateway() (gw *pkg.Gateway, err error) {
+	gw, err = pkg.NewGateway()
 	if err != nil {
 		panic(err)
 	}
@@ -69,43 +111,5 @@ func main() {
 		return
 	}
 
-	logger.Info("starting container...")
-
-	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(
-			grpc_middleware.ChainUnaryServer(
-				grpc_recovery.UnaryServerInterceptor(
-					grpc_recovery.WithRecoveryHandlerContext(
-						func(ctx context.Context, p interface{}) error {
-							logger.Error("grpc_recovery", p, ctx)
-							return p.(error)
-						},
-					),
-				),
-			),
-		),
-	}
-
-	grpcServer := grpc.NewServer(opts...)
-	api.RegisterHermesServer(grpcServer, gw)
-
-	server := grpcweb.WrapServer(grpcServer,
-		grpcweb.WithOriginFunc(func(str string) bool {
-			return true // change this
-		}),
-	)
-
-	handler := func(resp http.ResponseWriter, req *http.Request) {
-		server.ServeHTTP(resp, req)
-	}
-
-	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%d", *port),
-		Handler: http.HandlerFunc(handler),
-	}
-
-	logger.Info(fmt.Sprintf("listening on port :%d", *port))
-	if err := httpServer.ListenAndServe(); err != nil {
-		panic(err)
-	}
+	return
 }
